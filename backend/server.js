@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const colors = require("colors");
 const dotenv = require("dotenv").config();
@@ -15,6 +16,21 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/goals", require("./routes/goalRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+
+// Serve frontend
+if (process.env.NODE_ENV === "production") {
+	// set static folder -- where react builds out the static assets
+	app.use(express.static(path.join(__dirname, "../frontend/build")));
+
+	// for any routes (except our api routes already handled above)
+	app.get("*", (req, res) =>
+		res.sendFile(
+			path.resolve(__dirname, "../", "frontend", "build", "index.html")
+		)
+	);
+} else {
+	app.get("/", (req, res) => res.send("Please set to production"));
+}
 
 // Middleware to override default Express Error handler
 app.use(errorHandler);
